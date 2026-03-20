@@ -1,0 +1,4 @@
+com\thallyson\sboot\payrollqueryservice\application\usecase\GetPayrollServiceTest.class
+com\thallyson\sboot\payrollqueryservice\OrchestratorWebClientAdapterTest.class
+com\thallyson\sboot\payrollqueryservice\PayrollControllerIntegrationTest.class
+com\thallyson\sboot\payrollqueryservice\GetPayrollServiceTest.class
