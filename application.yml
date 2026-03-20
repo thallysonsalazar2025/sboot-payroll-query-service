@@ -7,9 +7,9 @@ server:
 # Datasource configuration
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/payroll_db
-    username: your_username
-    password: your_password
+    url: ${DB_URL:jdbc:mysql://localhost:3306/payroll_db}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:secret}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 # JPA Configuration
