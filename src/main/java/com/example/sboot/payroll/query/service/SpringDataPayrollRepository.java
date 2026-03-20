@@ -1,1 +1,0 @@
-import org.springframework.data.jpa.repository.JpaRepository;\nimport java.util.List;\n\npublic interface SpringDataPayrollRepository extends JpaRepository<Payroll, Long> {\n    List<Payroll> findByEmployeeId(Long employeeId);\n    List<Payroll> findByEmployeeIdAndYearAndMonth(Long employeeId, int year, int month);\n}

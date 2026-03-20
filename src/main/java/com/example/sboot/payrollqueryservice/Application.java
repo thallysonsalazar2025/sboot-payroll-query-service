@@ -1,4 +1,4 @@
-package com.thallyson.sboot.payrollqueryservice;
+package com.example.sboot.payrollqueryservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -1,1 +1,0 @@
-public record PayrollResponseDto(int year, int month, String status, String documentUrl) {}
