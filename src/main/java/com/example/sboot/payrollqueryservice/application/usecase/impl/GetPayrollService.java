@@ -15,7 +15,12 @@ public class GetPayrollService implements GetPayrollUseCase {
     public GetPayrollService(PayrollRepositoryPort repository) { this.repository = repository; }
 
     public Optional<Payroll> get(String companyId, String employeeId, YearMonth competence) {
-        return repository.findByCompanyIdAndEmployeeIdAndPayrollDate(companyId, employeeId, competence.atDay(1));
+        List<Payroll> payrolls = repository.findByCompanyIdAndEmployeeIdAndPayrollDateBetween(
+                companyId, employeeId, competence.atDay(1), competence.plusMonths(1).atDay(1));
+        if (payrolls.size() > 1) {
+            throw new IllegalStateException("Multiple payroll records found for the requested competence");
+        }
+        return payrolls.stream().findFirst();
     }
 
     public List<Payroll> list(String companyId) { return repository.findAllByCompanyId(companyId); }

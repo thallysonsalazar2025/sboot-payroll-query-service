@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thallyson.sboot.payrollqueryservice.domain.entity.Payroll;
+import com.thallyson.sboot.payrollqueryservice.adapters.outbound.persistence.jpa.PayrollJpaEntity;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -20,5 +21,16 @@ class PayrollDomainTest {
     void rejectsMissingOwnership() {
         assertThrows(IllegalArgumentException.class, () -> new Payroll(null, " ", "employee-1",
                 LocalDate.of(2026, 7, 1), BigDecimal.ONE, BigDecimal.ZERO));
+        assertThrows(IllegalArgumentException.class, () -> new Payroll(null, null, "employee-1",
+                LocalDate.of(2026, 7, 1), BigDecimal.ONE, BigDecimal.ZERO));
+        assertThrows(IllegalArgumentException.class, () -> new Payroll(null, "tenant-a", " ",
+                LocalDate.of(2026, 7, 1), BigDecimal.ONE, BigDecimal.ZERO));
+    }
+
+    @Test
+    void supportsJpaTenantAssignmentDuringBackfill() {
+        PayrollJpaEntity entity = new PayrollJpaEntity();
+        entity.setCompanyId("tenant-a");
+        assertEquals("tenant-a", entity.getCompanyId());
     }
 }

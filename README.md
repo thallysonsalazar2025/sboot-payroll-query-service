@@ -34,7 +34,8 @@ verified and the unmapped-row count is zero.
 Required runtime configuration:
 
 - `JWT_SECRET`: at least 64 UTF-8 bytes, supplied through environment/secret management.
-- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`: database-specific values.
+- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`: required shared-environment PostgreSQL values.
+- `DB_DRIVER`: optional JDBC driver override; defaults to `org.postgresql.Driver`.
 - shared environments must use `ddl-auto=validate`; Flyway owns schema evolution.
 
 ## Installation Guide

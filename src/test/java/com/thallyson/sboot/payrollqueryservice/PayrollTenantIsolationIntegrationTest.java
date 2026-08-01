@@ -66,23 +66,20 @@ class PayrollTenantIsolationIntegrationTest {
     void repositoryScopesSameEmployeeAndCompetenceInBothDirections() {
         LocalDate competence = LocalDate.of(2026, 7, 1);
 
-        var tenantA = repository.findByCompanyIdAndEmployeeIdAndPayrollDate(
-                "tenant-a", "employee-1", competence).orElseThrow();
-        var tenantB = repository.findByCompanyIdAndEmployeeIdAndPayrollDate(
-                "tenant-b", "employee-1", competence).orElseThrow();
+        var tenantA = payrollsForMonth("tenant-a").get(0);
+        var tenantB = payrollsForMonth("tenant-b").get(0);
 
         org.assertj.core.api.Assertions.assertThat(tenantA.getNetSalary())
                 .isEqualByComparingTo("8000.05");
         org.assertj.core.api.Assertions.assertThat(tenantB.getNetSalary())
                 .isEqualByComparingTo("6000.05");
         org.assertj.core.api.Assertions.assertThat(
-                repository.findByCompanyIdAndEmployeeIdAndPayrollDate(
-                        "tenant-c", "employee-1", competence)).isEmpty();
+                payrollsForMonth("tenant-c")).isEmpty();
     }
 
     @Test
     void crossTenantResourceIsIndistinguishableFromMissingResource() throws Exception {
-        repository.delete(repository.findByCompanyIdAndEmployeeIdAndPayrollDate("tenant-a", "employee-1", LocalDate.of(2026, 7, 1)).orElseThrow());
+        repository.delete(payrollsForMonth("tenant-a").get(0));
         mvc.perform(get("/api/payroll/employee-1").param("year", "2026").param("month", "7")
                         .with(identity("tenant-a", "employee-1", "ROLE_EMPLOYEE")))
                 .andExpect(status().isNotFound()).andExpect(content().string(""));
@@ -92,7 +89,7 @@ class PayrollTenantIsolationIntegrationTest {
                         .with(identity("tenant-a", "another-employee", "ROLE_EMPLOYEE")))
                 .andExpect(status().isNotFound()).andExpect(jsonPath("$.error").value("Resource not found"));
 
-        repository.delete(repository.findByCompanyIdAndEmployeeIdAndPayrollDate("tenant-b", "employee-1", LocalDate.of(2026, 7, 1)).orElseThrow());
+        repository.delete(payrollsForMonth("tenant-b").get(0));
         mvc.perform(get("/api/payroll/employee-1").param("year", "2026").param("month", "7")
                         .with(identity("tenant-b", "employee-1", "ROLE_EMPLOYEE")))
                 .andExpect(status().isNotFound()).andExpect(content().string(""));
@@ -108,6 +105,34 @@ class PayrollTenantIsolationIntegrationTest {
                 .andExpect(jsonPath("$[0].netSalary").value(6000.05));
         mvc.perform(get("/api/payroll").with(identity("tenant-a", "employee-1", "ROLE_EMPLOYEE")))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void readsAnyDateInsideCompetenceAndPreservesPersistedNetSalary() throws Exception {
+        repository.delete(payrollsForMonth("tenant-a").get(0));
+        repository.save(new PayrollJpaEntity(null, "tenant-a", "employee-1", LocalDate.of(2026, 7, 31),
+                new BigDecimal("10000.00"), new BigDecimal("2000.00"), new BigDecimal("7777.77")));
+
+                mvc.perform(get("/api/payroll/employee-1").param("year", "2026").param("month", "7")
+                        .with(identity("tenant-a", "employee-1", "ROLE_EMPLOYEE")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.netSalary").value(7777.77));
+    }
+
+    @Test
+    void rejectsDuplicatePayrollsInsideSameTenantAndCompetence() throws Exception {
+        repository.save(new PayrollJpaEntity(null, "tenant-a", "employee-1", LocalDate.of(2026, 7, 31),
+                new BigDecimal("9000.00"), new BigDecimal("1000.00"), new BigDecimal("8000.00")));
+
+        mvc.perform(get("/api/payroll/employee-1").param("year", "2026").param("month", "7")
+                        .with(identity("tenant-a", "employee-1", "ROLE_EMPLOYEE")))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Internal server error"));
+    }
+
+    private List<PayrollJpaEntity> payrollsForMonth(String companyId) {
+        return repository.findByCompanyIdAndEmployeeIdAndPayrollDateGreaterThanEqualAndPayrollDateLessThan(
+                companyId, "employee-1", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 8, 1));
     }
 
     @Test
@@ -136,6 +161,16 @@ class PayrollTenantIsolationIntegrationTest {
                         .header("Authorization", "Bearer " + signedTokenWithPayload(
                                 "{\"sub\":\"admin-user\",\"roles\":{\"unexpected\":\"ROLE_ADMIN\"},"
                                         + "\"companyId\":\"tenant-a\",\"employeeId\":\"admin\","
+                                        + "\"iat\":" + Instant.now().getEpochSecond() + ",\"exp\":"
+                                        + Instant.now().plusSeconds(300).getEpochSecond() + "}")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void realTokenWithoutRolesCannotUseAdministrativeEndpoint() throws Exception {
+        mvc.perform(get("/api/payroll")
+                        .header("Authorization", "Bearer " + signedTokenWithPayload(
+                                "{\"sub\":\"user\",\"companyId\":\"tenant-a\",\"employeeId\":\"employee-1\","
                                         + "\"iat\":" + Instant.now().getEpochSecond() + ",\"exp\":"
                                         + Instant.now().plusSeconds(300).getEpochSecond() + "}")))
                 .andExpect(status().isForbidden());

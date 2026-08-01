@@ -1,7 +1,6 @@
 package com.thallyson.sboot.payrollqueryservice.adapters.outbound.persistence.jpa;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.time.LocalDate;
 
@@ -25,8 +24,14 @@ public class PersistencePayrollRepositoryAdapter implements PayrollRepositoryPor
     }
 
     @Override
-    public Optional<Payroll> findByCompanyIdAndEmployeeIdAndPayrollDate(String companyId, String employeeId, LocalDate payrollDate) {
-        return repository.findByCompanyIdAndEmployeeIdAndPayrollDate(companyId, employeeId, payrollDate).map(this::toDomain);
+    public List<Payroll> findByCompanyIdAndEmployeeIdAndPayrollDateBetween(
+            String companyId, String employeeId, LocalDate startInclusive, LocalDate endExclusive) {
+        return repository
+                .findByCompanyIdAndEmployeeIdAndPayrollDateGreaterThanEqualAndPayrollDateLessThan(
+                        companyId, employeeId, startInclusive, endExclusive)
+                .stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override
@@ -56,7 +61,8 @@ public class PersistencePayrollRepositoryAdapter implements PayrollRepositoryPor
                 entity.getEmployeeId(),
                 entity.getPayrollDate(),
                 entity.getGrossSalary(),
-                entity.getDeductions()
+                entity.getDeductions(),
+                entity.getNetSalary()
         );
     }
 }

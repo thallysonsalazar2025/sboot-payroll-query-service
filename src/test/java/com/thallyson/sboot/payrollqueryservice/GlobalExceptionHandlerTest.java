@@ -18,4 +18,14 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).containsEntry("error", "Internal server error");
         assertThat(response.getBody().toString()).doesNotContain(sensitiveDetail, "salary", "token", "SQL");
     }
+
+    @Test
+    void sanitizesInvalidArguments() {
+        var response = new GlobalExceptionHandler().handleBadRequest(
+                new IllegalArgumentException("salary and SQL details"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).containsEntry("error", "Invalid request");
+        assertThat(response.getBody().toString()).doesNotContain("salary", "SQL");
+    }
 }

@@ -13,13 +13,18 @@ public final class Payroll {
     private final BigDecimal netSalary;
 
     public Payroll(Long id, String companyId, String employeeId, LocalDate payrollDate, BigDecimal grossSalary, BigDecimal deductions) {
+        this(id, companyId, employeeId, payrollDate, grossSalary, deductions, grossSalary.subtract(deductions));
+    }
+
+    public Payroll(Long id, String companyId, String employeeId, LocalDate payrollDate, BigDecimal grossSalary,
+                   BigDecimal deductions, BigDecimal netSalary) {
         this.id = id;
         this.companyId = requireText(companyId, "companyId");
         this.employeeId = requireText(employeeId, "employeeId");
         this.payrollDate = payrollDate;
         this.grossSalary = grossSalary;
         this.deductions = deductions;
-        this.netSalary = grossSalary.subtract(deductions);
+        this.netSalary = netSalary;
     }
 
     private static String requireText(String value, String field) {
