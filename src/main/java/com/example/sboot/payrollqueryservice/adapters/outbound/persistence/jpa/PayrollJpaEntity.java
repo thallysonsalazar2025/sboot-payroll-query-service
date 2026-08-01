@@ -18,32 +18,41 @@ public class PayrollJpaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Nullable only for quarantined legacy rows during the expand/backfill phase.
+    // Tenant-scoped application writes still require a non-blank companyId.
+    @Column(name = "company_id", length = 100)
+    private String companyId;
+
     @Column(name = "employee_id", nullable = false)
     private String employeeId;
 
     @Column(name = "payroll_date", nullable = false)
     private LocalDate payrollDate;
 
-    @Column(name = "gross_salary", nullable = false)
+    @Column(name = "gross_salary", nullable = false, precision = 19, scale = 2)
     private BigDecimal grossSalary;
 
-    @Column(name = "deductions", nullable = false)
+    @Column(name = "deductions", nullable = false, precision = 19, scale = 2)
     private BigDecimal deductions;
 
-    @Column(name = "net_salary", nullable = false)
+    @Column(name = "net_salary", nullable = false, precision = 19, scale = 2)
     private BigDecimal netSalary;
 
     public PayrollJpaEntity() {
     }
 
-    public PayrollJpaEntity(Long id, String employeeId, LocalDate payrollDate, BigDecimal grossSalary, BigDecimal deductions, BigDecimal netSalary) {
+    public PayrollJpaEntity(Long id, String companyId, String employeeId, LocalDate payrollDate, BigDecimal grossSalary, BigDecimal deductions, BigDecimal netSalary) {
         this.id = id;
+        this.companyId = companyId;
         this.employeeId = employeeId;
         this.payrollDate = payrollDate;
         this.grossSalary = grossSalary;
         this.deductions = deductions;
         this.netSalary = netSalary;
     }
+
+    public String getCompanyId() { return companyId; }
+    public void setCompanyId(String companyId) { this.companyId = companyId; }
 
     public Long getId() {
         return id;

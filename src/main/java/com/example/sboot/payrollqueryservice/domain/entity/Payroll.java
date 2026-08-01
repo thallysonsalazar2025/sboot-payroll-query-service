@@ -5,20 +5,31 @@ import java.time.LocalDate;
 
 public final class Payroll {
     private final Long id;
+    private final String companyId;
     private final String employeeId;
     private final LocalDate payrollDate;
     private final BigDecimal grossSalary;
     private final BigDecimal deductions;
     private final BigDecimal netSalary;
 
-    public Payroll(Long id, String employeeId, LocalDate payrollDate, BigDecimal grossSalary, BigDecimal deductions) {
+    public Payroll(Long id, String companyId, String employeeId, LocalDate payrollDate, BigDecimal grossSalary, BigDecimal deductions) {
         this.id = id;
-        this.employeeId = employeeId;
+        this.companyId = requireText(companyId, "companyId");
+        this.employeeId = requireText(employeeId, "employeeId");
         this.payrollDate = payrollDate;
         this.grossSalary = grossSalary;
         this.deductions = deductions;
         this.netSalary = grossSalary.subtract(deductions);
     }
+
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " is required");
+        }
+        return value;
+    }
+
+    public String getCompanyId() { return companyId; }
 
     public Long getId() {
         return id;

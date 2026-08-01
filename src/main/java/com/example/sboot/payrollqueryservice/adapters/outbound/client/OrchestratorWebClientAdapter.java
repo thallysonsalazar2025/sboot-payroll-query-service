@@ -9,8 +9,8 @@ import com.thallyson.sboot.payrollqueryservice.domain.ports.outbound.Orchestrato
 public class OrchestratorWebClientAdapter implements OrchestratorClientPort {
     private final WebClient webClient;
 
-    public OrchestratorWebClientAdapter(WebClient webClient) {
-        this.webClient = webClient;
+    public OrchestratorWebClientAdapter(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
     // Implement methods from OrchestratorClientPort here
