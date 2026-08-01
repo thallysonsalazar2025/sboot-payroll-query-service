@@ -19,7 +19,9 @@ jobs:
   validate:
     name: Build, tests and security validation
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The first NVD datafeed bootstrap can exceed 35 minutes on hosted runners.
+    # Warm runs remain fast because the versioned daily cache is restored.
+    timeout-minutes: 75
 
     steps:
       - name: Checkout repository
@@ -68,7 +70,7 @@ jobs:
             ${{ runner.os }}-dependency-check-12.2.2-nist-feed-v1-
 
       - name: Dependency vulnerability scan
-        timeout-minutes: 35
+        timeout-minutes: 65
         shell: bash
         run: |
           for attempt in 1 2 3; do
