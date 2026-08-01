@@ -57,7 +57,7 @@ mvn test
 ```
 
 ## Configuration
-Environment settings can be modified in `application.properties`. Ensure that the database configuration is correct.
+Environment settings are externalized through the variables documented above and `application.yml`.
 
 ## Design Patterns
 - **Repository Pattern**: Used for data access layers.
@@ -74,6 +74,11 @@ Environment settings can be modified in `application.properties`. Ensure that th
 - Check database connection settings in `application.properties` if you have connectivity issues.
 
 ## Contribution Guidelines
+`mvn clean verify` executes the test suite, JaCoCo coverage gates and SpotBugs
+4.9.3.0 at maximum effort. Pull Request CI also runs Gitleaks, changed-code
+coverage, OWASP Dependency-Check and publishes the application artifact named by
+the commit SHA.
+
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature/your-feature`).
 3. Commit your changes (`git commit -am 'Add some feature'`).
