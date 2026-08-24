@@ -64,6 +64,8 @@ class PayrollTenantMigrationTest {
             assertThat(result.getString("version")).isEqualTo("1");
             assertThat(result.next()).isTrue();
             assertThat(result.getString("version")).isEqualTo("2");
+            assertThat(result.next()).isTrue();
+            assertThat(result.getString("version")).isEqualTo("3");
             assertThat(result.next()).isFalse();
         }
     }
