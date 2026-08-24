@@ -71,6 +71,11 @@
       <artifactId>flyway-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
@@ -177,12 +182,12 @@
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
         <version>${dependency-check.version}</version>
-          <configuration>
-            <failBuildOnCVSS>8</failBuildOnCVSS>
-            <dataDirectory>${user.home}/.cache/dependency-check</dataDirectory>
-            <nvdDatafeedUrl>https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{0}.json.gz</nvdDatafeedUrl>
-            <nvdValidForHours>24</nvdValidForHours>
-            <formats>
+        <configuration>
+          <failBuildOnCVSS>8</failBuildOnCVSS>
+          <dataDirectory>${user.home}/.cache/dependency-check</dataDirectory>
+          <nvdDatafeedUrl>https://nvd.nist.gov/feeds/json/cve/2.0/nvdcve-2.0-{0}.json.gz</nvdDatafeedUrl>
+          <nvdValidForHours>24</nvdValidForHours>
+          <formats>
             <format>HTML</format>
             <format>JSON</format>
           </formats>
