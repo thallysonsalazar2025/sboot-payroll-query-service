@@ -14,8 +14,29 @@ The application follows a microservices architecture, utilizing Spring Boot for 
 ## API Endpoints
 | Method | Endpoint                  | Description                       |
 |--------|---------------------------|-----------------------------------|
-| GET    | /api/payroll/{employeeId} | Retrieve payroll information by employee ID. |
-| GET    | /api/payroll              | Retrieve all payroll records.     |
+| GET    | /api/payroll/{employeeId}?year=2026&month=7 | Retrieve one payroll in the authenticated tenant. Employees may only read themselves; admins may read employees in their tenant. |
+| GET    | /api/payroll              | List payrolls in the authenticated tenant (admin only). |
+| GET    | /payroll                  | Compatibility alias for the tenant-scoped admin list. |
+
+## Multi-tenant security
+
+The service validates the bearer JWT with the same HMAC secret and `companyId`,
+`employeeId`, and `roles` claims issued by the authentication service. Tenant
+scope is never accepted from a path, query parameter, or request body. Missing
+and out-of-scope payrolls do not disclose data from another company.
+
+`company_id` is introduced as a nullable expand migration so existing rows are
+preserved without inventing ownership. Rows without a verified tenant mapping
+remain quarantined and are not returned by tenant-scoped queries. A later
+contract migration may make the column non-null only after the owner mapping is
+verified and the unmapped-row count is zero.
+
+Required runtime configuration:
+
+- `JWT_SECRET`: at least 64 UTF-8 bytes, supplied through environment/secret management.
+- `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`: required shared-environment PostgreSQL values.
+- `DB_DRIVER`: optional JDBC driver override; defaults to `org.postgresql.Driver`.
+- shared environments must use `ddl-auto=validate`; Flyway owns schema evolution.
 
 ## Installation Guide
 1. Clone the repository:
@@ -36,7 +57,7 @@ mvn test
 ```
 
 ## Configuration
-Environment settings can be modified in `application.properties`. Ensure that the database configuration is correct.
+Environment settings are externalized through the variables documented above and `application.yml`.
 
 ## Design Patterns
 - **Repository Pattern**: Used for data access layers.
@@ -53,6 +74,11 @@ Environment settings can be modified in `application.properties`. Ensure that th
 - Check database connection settings in `application.properties` if you have connectivity issues.
 
 ## Contribution Guidelines
+`mvn clean verify` executes the test suite, JaCoCo coverage gates and SpotBugs
+4.9.3.0 at maximum effort. Pull Request CI also runs Gitleaks, changed-code
+coverage, OWASP Dependency-Check and publishes the application artifact named by
+the commit SHA.
+
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature/your-feature`).
 3. Commit your changes (`git commit -am 'Add some feature'`).

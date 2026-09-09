@@ -1,8 +1,8 @@
 package com.thallyson.sboot.payrollqueryservice.adapters.outbound.persistence.jpa;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Repository;
 
@@ -24,13 +24,19 @@ public class PersistencePayrollRepositoryAdapter implements PayrollRepositoryPor
     }
 
     @Override
-    public Optional<Payroll> findById(Long id) {
-        return repository.findById(id).map(this::toDomain);
+    public List<Payroll> findByCompanyIdAndEmployeeIdAndPayrollDateBetween(
+            String companyId, String employeeId, LocalDate startInclusive, LocalDate endExclusive) {
+        return repository
+                .findByCompanyIdAndEmployeeIdAndPayrollDateGreaterThanEqualAndPayrollDateLessThan(
+                        companyId, employeeId, startInclusive, endExclusive)
+                .stream()
+                .map(this::toDomain)
+                .toList();
     }
 
     @Override
-    public List<Payroll> findAll() {
-        return repository.findAll()
+    public List<Payroll> findAllByCompanyId(String companyId) {
+        return repository.findAllByCompanyId(companyId)
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
@@ -39,6 +45,7 @@ public class PersistencePayrollRepositoryAdapter implements PayrollRepositoryPor
     private PayrollJpaEntity toEntity(Payroll payroll) {
         return new PayrollJpaEntity(
                 payroll.getId(),
+                payroll.getCompanyId(),
                 payroll.getEmployeeId(),
                 payroll.getPayrollDate(),
                 payroll.getGrossSalary(),
@@ -50,10 +57,12 @@ public class PersistencePayrollRepositoryAdapter implements PayrollRepositoryPor
     private Payroll toDomain(PayrollJpaEntity entity) {
         return new Payroll(
                 entity.getId(),
+                entity.getCompanyId(),
                 entity.getEmployeeId(),
                 entity.getPayrollDate(),
                 entity.getGrossSalary(),
-                entity.getDeductions()
+                entity.getDeductions(),
+                entity.getNetSalary()
         );
     }
 }
